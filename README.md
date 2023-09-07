@@ -54,7 +54,7 @@ Your endpoint structure must follow this convention
 ```
 
 You must also include your .env file in your repo when pushing. You could create a dummy mongodb account using a dummy gmail account for this purpose because i will also be checking your collection and documents
-
+## Make sure to create an issue containing information about how to run your project and the link to the pull request you made
 - [x] First you have to create a fork of this repository
 - [x] Push your changes to your own fork
 - [x] Create a pull request against this repo
