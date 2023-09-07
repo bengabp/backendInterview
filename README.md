@@ -55,6 +55,10 @@ Your endpoint structure must follow this convention
 
 You must also include your .env file in your repo when pushing. You could create a dummy mongodb account using a dummy gmail account for this purpose because i will also be checking your collection and documents
 
+- [x] First you have to create a fork of this repository
+- [x] Push your changes to your own fork
+- [x] Create a pull request against this repo
+
 ## Task1:
 Create an api using fastapi, ideally, users must be able to upload csv files of specific formats, and your api endpoint must be able to parse the csv, return appropriate responses if its not a valid text/csv content_type, parse the csv and     extract the fields. fields must be validated and must match predefined fields
 Objective: The objective of the api is to have an endpoint which accepts a csv form upload . The csv file contains contacts of people and their email (FirstName, Email, Lastname, Company_name)
@@ -111,9 +115,11 @@ Create a similar endpoint to task2 but for getting the info of one speficif cont
 create an endpoint for downloading the a contact file (csv of contacts). It should return a 
 fastapi Response object that returns a file, the file must have its content_type set to text/csv
 you can defined Test Bearer token in your app to a static value. the aim is to deny any user 
-trying to download a contactfile which does not belong to them. Remember that contacts are uploaded in csv so we also want to download them in csv. when the user specifies the contact uid, all contacts under that uid must be returned as a csv file.write
+trying to download a contactfile which does not belong to them. Remember that contacts are uploaded in 
+csv so we also want to download them in csv. when the user specifies the contact uid, 
+all contacts under that uid must be returned as a csv file
 
-for example. in task1 user has uploaded a file called excluded_contacts.csv the schema for the contact object would be
+For example, In Task 1 user has uploaded a file called excluded_contacts.csv the schema for the contact object would be
 ```json
 {
 	"uid":"334343saedfadf",
@@ -121,7 +127,11 @@ for example. in task1 user has uploaded a file called excluded_contacts.csv the 
 	"uploadedDate":"2023/4/5",
 	"totalContacts":3000
 }
-this shows that the contact file uploaded has 3000 contacts in it. a contact is represented in this format
+```
+
+This shows that the contact file uploaded has 3000 contacts in it. a contact is represented in this format
+
+```json
 {
 	"firstName":"Ben",
 	"lastName":"Gab",
@@ -154,4 +164,6 @@ Lets say a user uploads a csv file of 3000 contacts, task 1 is for upload endpoi
 ```
 
 This should be appended to the contacts attribute for each user in the collection (mongodb database)
-If the conatact already exist, is must be ignored.
+If the contact already exist, is must be ignored.
+
+# Looking forward to have you in our team
