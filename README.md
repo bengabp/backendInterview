@@ -25,7 +25,8 @@
 	```console
 	conda activate fastapi
 	```
-
+	- Run the server
+	
 	```console
 	uvicorn app:app --reload
 	```
