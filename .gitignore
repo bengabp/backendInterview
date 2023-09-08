@@ -47,7 +47,6 @@ coverage.xml
 *.sublime-workspace
 
 # Environment
-.env
 .venv/
 env/
 venv/
@@ -69,8 +68,6 @@ pythonenv*
 *.log-*
 *.json
 *.xml
-*.yaml
-*.yml
 *.csv
 
 # Dependency directories

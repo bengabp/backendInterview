@@ -1,31 +1,29 @@
 import pandas as pd
-from api.contacts.schema import Contact
-# Create a list of dictionaries with contact information
-contacts = [
-    {
-        "firstName": "John",
-        "lastName": "Doe",
-        "companyName": "ABC Inc.",
-        "email": "john.doe@example.com",
-    },
-    {
-        "firstName": "Jane",
-        "lastName": "Smith",
-        "companyName": "XYZ Corp",
-        "email": "jane.smith@example.com",
-    },
-    {
-        "firstName": "Mike",
-        "lastName": "Johnson",
-        "companyName": "LMN Ltd",
-        "email": "mike.johnson@example.com",
-    },
-]
+import random
+import faker
 
-# Create a DataFrame from the list of dictionaries
-df = pd.DataFrame(contacts)
+# Create a Faker instance for generating random data
+fake = faker.Faker()
+index = 2
+while True:
+    # Generate 100 random examples in the specified format
+    data = []
+    for _ in range(100):
+        example = {
+            "FirstName": fake.first_name(),
+            "Lastname": fake.last_name(),
+            "Company_name": fake.company(),
+            "Email": fake.email(),
+        }
+        data.append(example)
 
-# Save the DataFrame as a CSV file
-# 
-print(Contact.__annotations__.items())
-print([field.alias for _, field in Contact.model_fields.items()])
+    # Create a DataFrame from the data
+    df = pd.DataFrame(data)
+
+    # Define the CSV file path where you want to save the DataFrame
+    csv_file_path = f"output_data_{index}.csv"
+
+    # Save the DataFrame to a CSV file
+    df.to_csv(csv_file_path, index=False)
+    index += 1
+    print(f"DataFrame saved to {csv_file_path}")
