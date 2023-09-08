@@ -37,7 +37,7 @@ def is_valid_csv(file: UploadFile) -> Union[pd.DataFrame, bool]:
         return df
     except pd.errors.EmptyDataError:
         return False
-    except:
+    except: # Not a valid File
         return False
 
 
