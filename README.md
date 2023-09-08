@@ -14,7 +14,18 @@
   - Make sure to log in before you test the API in Swagger UI by clicking the `Authorize` button. For example, to act as Mohammad, put in the username: `mohammad` and password: `secret` in the form-data.
 
 - To run the API:
-	
+	- First create the conda environment by running the following command:
+
+	```console
+	conda env create -f environment.yml
+	```
+
+	- Activate the newly created conda environment
+
+	```console
+	conda activate fastapi
+	```
+
 	```console
 	uvicorn app:app --reload
 	```
