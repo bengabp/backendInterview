@@ -38,7 +38,7 @@ def is_valid_csv(file: UploadFile) -> Union[pd.DataFrame, bool]:
     except pd.errors.EmptyDataError:
         return False
     except:
-        return df
+        return False
 
 
 def parse_csv(df: pd.DataFrame) -> List[dict]:
