@@ -3,6 +3,8 @@
 ### Additional Notes:
 - Please run the `docker-compose` file before testing out the API. The `docker-compose` runs a testing MongoDB container, which is acting as a testing DB. You can go to the Mongo Express URL at `localhost:8081` to see how the documents and collections are being uploaded.
 
+- I used test.py script to generate random CSV files that I used to test my API.
+
 - To run the Docker Compose, please run the following command:
 
 ```console
