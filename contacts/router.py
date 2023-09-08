@@ -34,7 +34,7 @@ async def get_single_contact(request: Request, response: Response):
 
     return res_data
 
-# upload csv data to db
+# Task 1: upload csv data to db
 @router.post("/upload-contact-file", 
              tags=["contact"],
              summary="This endpoint to upload user csv file",
@@ -50,8 +50,6 @@ async def upload_csv_file(file: UploadFile):
     if file.content_type != "text/csv":
         res_data.set_status(Error(code=1, message="file is not allowed!"))
         return res_data
-    
-    #contents = await file.read()
 
     contacts = []
     contents = await file.read()
@@ -68,11 +66,9 @@ async def upload_csv_file(file: UploadFile):
 
     # write content in database
     cursor = db.insert_many("contacts", contacts)
-    
 
-    if cursor.inserted_ids == None:
-        res_data.set_status(Error(code=1, message="file is not allowed!"))
+    if len(cursor.inserted_ids) == 0:
+        res_data.set_status(Error(code=3, message="file data are not inserterd"))
         return res_data
-    
 
     return res_data.set_status(Error(code=0, message="success"))

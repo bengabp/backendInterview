@@ -1,9 +1,13 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
+import uvicorn
+
 from contacts.router import router as contact_router
-from config import MONGODB_DB, MONGODB_URI
-from pymongo import MongoClient
-from db import MongoDB
+import config
 
 app = FastAPI()
 
 app.include_router(contact_router)
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host=config.HOST, port=config.PORT)

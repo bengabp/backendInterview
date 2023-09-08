@@ -28,21 +28,4 @@ class MongoDB:
     
     def insert_many(self, collection_name, params):
         return self.db[collection_name].insert_many(params)
-
-
-
-# Replace these with your MongoDB Atlas credentials
-#DB_URI = "mongodb+srv://user:pass1234@your_cluster.mongodb.net/test?retryWrites=true&w=majority"
-# DB_URI = "mongodb+srv://user:pass123@cluster0.nhps5bk.mongodb.net/?retryWrites=true&w=majority"
-# DB_NAME = "bengab"
-
-# Create a MongoClient instance
-# client = MongoClient(MONGODB_URI)
-
-# # Create an instance of the MongoDB class with the client
-# db = MongoDB(client, MONGODB_DB)
-
-# db.ping_db()
-
-
-
+    
