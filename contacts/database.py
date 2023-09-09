@@ -40,14 +40,14 @@ class ContactDatabase():
 
     async def get_all_contacts(params: dict):
         contacts_list = []
-        filter = {"created_at": params["start_date"]}
+        filter = {"created_at": {"$lte": (params["start_date"]),  '$options': 'i'}}
         if (params["end_date"]) is not None:
             filter = {
-                "created_at": {'$regex': params['start_date', "end_date"],  '$options': 'i'},
+                "created_at":  {"$gte": (params["start_date"]),"$lte": (params["end_date"])},
             }
         contacts = await ContactDatabase.contact_collection.aggregate([
             {
-                "$match": {"created_at": {"$lt": filter}}
+                "$match": {"created_at": filter}
             },
             {"$project": {
                 "uid": "$user_id",
