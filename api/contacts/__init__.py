@@ -29,7 +29,7 @@ def is_valid_csv(file: UploadFile) -> Union[pd.DataFrame, bool]:
     try:
         df = pd.read_csv(file.file)
         unique_columns = set(df.columns.to_list())
-        needed_columns = {CSV_FIELDS}
+        needed_columns = set(CSV_FIELDS)
         if not needed_columns.issubset(
             unique_columns
         ):  # Check if user has uploaded a file which consist of all the needed columns.
@@ -37,9 +37,9 @@ def is_valid_csv(file: UploadFile) -> Union[pd.DataFrame, bool]:
         return df
     except pd.errors.EmptyDataError:
         return False
-    except: # Not a valid File
+    except:
         return False
-
+    
 
 def parse_csv(df: pd.DataFrame) -> List[dict]:
     """Convert a pandas dataframe to json"""
@@ -87,7 +87,6 @@ def extract_dates(date_str: str) -> Tuple[Union[datetime, None], Union[datetime,
     date_str = date_str.replace(" ", "")
     # Split the input string by the '-' character
     date_parts = date_str.split("-")
-    print(date_parts)
     if len(date_parts) == 1:
         try:
             end_date = datetime.strptime(date_parts[0], "%Y/%m/%d")
@@ -250,7 +249,7 @@ def fake_hash_password(password: str):  ## This is just for dummy purposes
     return "fakehashed" + password
 
 
-async def get_current_user(token: Annotated[str, Depends(OAUTH2_SCHEMA)]):
+def get_current_user(token: Annotated[str, Depends(OAUTH2_SCHEMA)]):
     """Get the current user and authenticates the user"""
     user = fake_decode_token(token)
     if not user:

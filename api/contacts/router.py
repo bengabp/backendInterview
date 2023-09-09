@@ -36,7 +36,7 @@ app = FastAPI()
         status.HTTP_400_BAD_REQUEST: {"model": ErrorResponse},
     },
 )
-async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
+def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     user_dict = FAKE_USERS_DB.get(form_data.username)
     if not user_dict:
         raise HTTPException(status_code=400, detail="Incorrect username or password")
@@ -58,7 +58,7 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
         status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": ErrorResponse},
     },
 )
-async def upload_csv_and_parse_data(
+def upload_csv_and_parse_data(
     current_user: Annotated[User, Depends(get_current_user)],
     file: UploadFile = File(...),
 ):
@@ -90,7 +90,7 @@ async def upload_csv_and_parse_data(
         status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": ErrorResponse},
     },
 )
-async def get_contacts_by_date_range(
+def get_contacts_by_date_range(
     date_range: Annotated[DateRangeQuery, Depends(DateRangeQuery)],
     user: Annotated[User, Depends(get_current_user)],
 ):
@@ -118,7 +118,7 @@ async def get_contacts_by_date_range(
         status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": ErrorResponse},
     },
 )
-async def get_contact_by_uid(
+def get_contact_by_uid(
     uid: str,
     user: User = Depends(get_current_user),
 ):
@@ -142,7 +142,7 @@ async def get_contact_by_uid(
         status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": ErrorResponse},
     },
 )
-async def download_contact_file(
+def download_contact_file(
     uid: str,
     user: User = Depends(get_current_user),
 ):
@@ -172,7 +172,7 @@ async def download_contact_file(
         status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": ErrorResponse},
     },
 )
-async def delete_contact_file(
+def delete_contact_file(
     uid: str,
     user: User = Depends(get_current_user),
 ):
