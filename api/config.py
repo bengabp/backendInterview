@@ -18,7 +18,9 @@ FAKE_USERS_DB = {
     },
 }
 
-MONGO_DB_URL = f"mongodb://{os.environ['MONGO_DB_USER']}:{os.environ['MONGO_DB_PASSWORD']}@{os.environ['MONGO_DB_HOST']}/"
+# MONGO_DB_URL = f"mongodb://{os.environ['MONGO_DB_USER']}:{os.environ['MONGO_DB_PASSWORD']}@{os.environ['MONGO_DB_HOST']}/"
+MONGO_DB_URL = f"mongodb://localhost:27017/"
+
 MONGO_DB_DATABASE = os.environ["MONGO_DB_DATABASE"]
 OAUTH2_SCHEMA = OAuth2PasswordBearer(tokenUrl="token")
 CSV_FIELDS = ["FirstName", "Email", "Lastname", "Company_name"]

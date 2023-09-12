@@ -23,10 +23,26 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import UploadFile, File, status, Depends, FastAPI, HTTPException, status
 from fastapi.responses import Response
 import pandas as pd
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
+origins = [
+    "http://localhost:8000",
+]
 
+
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 @app.post(
     "/token",
     tags=["Token"],
@@ -39,9 +55,11 @@ app = FastAPI()
 def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     user_dict = FAKE_USERS_DB.get(form_data.username)
     if not user_dict:
-        raise HTTPException(status_code=400, detail="Incorrect username or password")
-    user = UserInDB(**user_dict)
+        raise HTTPException(status_code=400, detail="Incorrect username or password.")
+    
     hashed_password = fake_hash_password(form_data.password)
+    user_dict['hashed_password'] = hashed_password
+    user = UserInDB(**user_dict)
     if not hashed_password == user.hashed_password:
         raise HTTPException(status_code=400, detail="Incorrect username or password")
     return {"access_token": user.username, "token_type": "bearer"}
