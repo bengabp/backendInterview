@@ -3,6 +3,7 @@ import json
 
 from pydantic_settings import BaseSettings
 from logging import Formatter
+from enum import Enum
 
 
 class Config(BaseSettings):
@@ -10,7 +11,14 @@ class Config(BaseSettings):
     LOG_LEVEL: str = "DEBUG"
 
 
-config = Config()
+class HTTPStatus:
+    OK = 200
+    ACCEPTED = 202
+
+    BAD_REQUEST = 400
+    UNAUTHORIZED = 401
+    NOT_FOUND = 404
+    UNPROCESSABLE_ENTITY = 422
 
 
 class JsonFormatter(Formatter):
@@ -35,6 +43,7 @@ class JsonFormatter(Formatter):
         return json.dumps(json_record)
 
 
+config = Config()
 logger = logging.getLogger(config.APP_NAME)
 handler = logging.StreamHandler()
 handler.setFormatter(JsonFormatter())
