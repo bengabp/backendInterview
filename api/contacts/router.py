@@ -1,4 +1,4 @@
-from fastapi import UploadFile
+from fastapi import UploadFile, Depends
 from fastapi.routing import APIRouter
 from fastapi.responses import FileResponse
 from typing import Union
@@ -10,6 +10,11 @@ from api.contacts.response_schemas import (
     GetContactsByDateResponse,
     DeleteFileResponse,
     ContactsFileInDBResponse,
+)
+from api.contacts.request_schemas import (
+    GetContactsByDateQuery,
+    GetContactsByUIDQuery,
+    DeleteContactsByUIDQuery,
 )
 
 
@@ -38,8 +43,10 @@ async def upload_csv(csv_file: UploadFile):
         HTTPStatus.BAD_REQUEST: {"model": ErrorResponse},
     },
 )
-async def get_contacts_by_date(date: str):
-    logger.debug(date)
+async def get_contacts_by_date(
+    request: GetContactsByDateQuery = Depends(GetContactsByDateQuery),
+):
+    logger.debug(request)
     return {}
 
 
@@ -52,9 +59,10 @@ async def get_contacts_by_date(date: str):
         HTTPStatus.NOT_FOUND: {"model": ErrorResponse},
     },
 )
-async def get_contacts_by_uid(contacts_file_uid: str, response: str):
-    logger.debug(contacts_file_uid)
-    logger.debug(response)
+async def get_contacts_by_uid(
+    request: GetContactsByUIDQuery = Depends(GetContactsByUIDQuery),
+):
+    logger.debug(request)
     return {}
 
 
@@ -67,6 +75,8 @@ async def get_contacts_by_uid(contacts_file_uid: str, response: str):
         HTTPStatus.NOT_FOUND: {"model": ErrorResponse},
     },
 )
-async def delete_contacts(contacts_file_uid: str):
-    logger.debug(contacts_file_uid)
+async def delete_contacts(
+    request: DeleteContactsByUIDQuery = Depends(DeleteContactsByUIDQuery),
+):
+    logger.debug(request)
     return {}
