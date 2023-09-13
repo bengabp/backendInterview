@@ -4,11 +4,13 @@ import json
 from pydantic_settings import BaseSettings
 from logging import Formatter
 from enum import Enum
+from typing import Set
 
 
 class Config(BaseSettings):
     APP_NAME: str = "contacts-app"
     LOG_LEVEL: str = "DEBUG"
+    MANDATORY_HEADERS: Set[str] = {"firstName", "lastName", "email", "companyName"}
 
 
 class HTTPStatus:

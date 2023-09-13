@@ -16,7 +16,7 @@ class ErrorResponse(BaseModel):
 
 
 class UploadFileResponse(BaseModel):
-    id: str = Field(description="File UID of uploaded file", alias="contacs_file_uid")
+    id: str = Field(description="File UID of uploaded file", alias="contacts_file_uid")
     filename: str = Field(description="Filename of uploaded file")
     content_type: str = Field(
         description="Content type of uploaded file", alias="Content-Type"
