@@ -7,6 +7,7 @@ from logging import Formatter
 
 class Config(BaseSettings):
     APP_NAME: str = "contacts-app"
+    LOG_LEVEL: str = "DEBUG"
 
 
 config = Config()
@@ -20,6 +21,11 @@ class JsonFormatter(Formatter):
         json_record = {}
         json_record["message"] = record.getMessage()
         json_record["level"] = record.levelname
+        json_record["logger"] = record.name
+        json_record["module"] = record.module
+        json_record["file"] = record.filename
+        json_record["line"] = record.lineno
+
         if "req" in record.__dict__:
             json_record["req"] = record.__dict__["req"]
         if "res" in record.__dict__:
@@ -29,9 +35,9 @@ class JsonFormatter(Formatter):
         return json.dumps(json_record)
 
 
-logger = logging.root
+logger = logging.getLogger(config.APP_NAME)
 handler = logging.StreamHandler()
 handler.setFormatter(JsonFormatter())
 logger.handlers = [handler]
-logger.setLevel(logging.DEBUG)
+logger.setLevel(config.LOG_LEVEL)
 logging.getLogger("uvicorn.access").disabled = True
