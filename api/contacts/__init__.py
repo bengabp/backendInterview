@@ -46,7 +46,7 @@ async def process_csv_file(csv_file: UploadFile, contacts_file_uid: str):
     )
     logger.debug(f"{db_doc_file_content=}")
     await asyncio.gather(
-        store_file_metadata_in_db(db_doc_file_meta),
+        upsert_file_metadata_in_db(db_doc_file_meta),
         store_file_content_in_db(db_doc_file_content),
     )
 
@@ -67,12 +67,23 @@ async def process_csv_file_contact_items(csv_reader, contacts_file_uid: str):
         logger.debug(f"{db_doc=}")
         insert_one_tasks.append(store_contact_in_db(db_doc))
 
-    await asyncio.gather(*insert_one_tasks)
+    await asyncio.gather(
+        *insert_one_tasks,
+        upsert_file_metadata_in_db(
+            {"$set": {"totalContacts": len(insert_one_tasks)}},
+            {"contacts_file_uid": db_doc.contacts_file_uid},
+        ),
+    )
 
 
-async def store_file_metadata_in_db(doc: UploadedFileInDB):
+async def upsert_file_metadata_in_db(
+    doc: UploadedFileInDB | dict, filter_query: dict = {}
+):
     file_metadata_collection = db["file_metadata"]
-    return await file_metadata_collection.insert_one(doc.model_dump())
+    update_object = doc if isinstance(doc, dict) else doc.model_dump()
+    return await file_metadata_collection.update_one(
+        filter=filter_query, update=update_object, upsert=True
+    )
 
 
 async def store_file_content_in_db(doc: UploadedFileContentInDB):

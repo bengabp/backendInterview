@@ -26,6 +26,7 @@ from api.contacts import (
     get_csv_headers,
     process_csv_file_contact_items,
     process_csv_file,
+    # get_contacts_from_date_range,
 )
 
 
@@ -82,7 +83,6 @@ async def upload_csv(csv_file: UploadFile, background_tasks: BackgroundTasks):
 async def get_contacts_by_date(
     request: GetContactsByDateQuery = Depends(GetContactsByDateQuery),
 ):
-    logger.debug(request)
     return {}
 
 
