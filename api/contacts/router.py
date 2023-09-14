@@ -5,7 +5,7 @@ from fastapi import UploadFile, Depends, BackgroundTasks
 from fastapi.routing import APIRouter
 from fastapi.responses import FileResponse, JSONResponse
 from typing import Union
-from tempfile import TemporaryFile
+from bson import objectid
 
 from config import logger, HTTPStatus
 from api.contacts.response_schemas import (
@@ -24,6 +24,7 @@ from api.contacts import (
     is_valid_file_csv_type,
     is_valid_csv_columns,
     get_csv_headers,
+    process_csv_file_contact_items,
     process_csv_file,
 )
 
@@ -40,7 +41,7 @@ contacts_router = APIRouter(prefix="/contacts", tags=["Contacts"])
         HTTPStatus.BAD_REQUEST: {"model": ErrorResponse},
     },
 )
-async def upload_csv(csv_file: UploadFile, backgroun_tasks: BackgroundTasks):
+async def upload_csv(csv_file: UploadFile, background_tasks: BackgroundTasks):
     if not is_valid_file_csv_type(csv_file.content_type):
         return ErrorResponse(
             status=HTTPStatus.BAD_REQUEST,
@@ -54,11 +55,15 @@ async def upload_csv(csv_file: UploadFile, backgroun_tasks: BackgroundTasks):
             status=HTTPStatus.BAD_REQUEST, details=f"Invalid columns: {csv_headers}"
         )
 
-    backgroun_tasks.add_task(process_csv_file, csv_reader)
+    contacts_file_uid = str(objectid.ObjectId())
+    background_tasks.add_task(
+        process_csv_file_contact_items, csv_reader, contacts_file_uid
+    )
+    background_tasks.add_task(process_csv_file, csv_file, contacts_file_uid)
     return JSONResponse(
         status_code=HTTPStatus.ACCEPTED,
         content={
-            "contacts_file_uid": "abcd",
+            "contacts_file_uid": contacts_file_uid,
             "filename": csv_file.filename,
             "Content-Type": "text/csv",
         },

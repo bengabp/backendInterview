@@ -1,9 +1,9 @@
 import logging
 import json
+import motor.motor_asyncio as motor_aio
 
 from pydantic_settings import BaseSettings
 from logging import Formatter
-from enum import Enum
 from typing import Set
 
 
@@ -11,6 +11,8 @@ class Config(BaseSettings):
     APP_NAME: str = "contacts-app"
     LOG_LEVEL: str = "DEBUG"
     MANDATORY_HEADERS: Set[str] = {"firstName", "lastName", "email", "companyName"}
+    MONGO_URI: str
+    MONGO_DB_NAME: str
 
 
 class HTTPStatus:
@@ -45,10 +47,17 @@ class JsonFormatter(Formatter):
         return json.dumps(json_record)
 
 
+def connect_db():
+    return motor_aio.AsyncIOMotorClient(config.MONGO_URI)[config.MONGO_DB_NAME]
+
+
 config = Config()
+
 logger = logging.getLogger(config.APP_NAME)
 handler = logging.StreamHandler()
 handler.setFormatter(JsonFormatter())
 logger.handlers = [handler]
 logger.setLevel(config.LOG_LEVEL)
 logging.getLogger("uvicorn.access").disabled = True
+
+db = connect_db()
