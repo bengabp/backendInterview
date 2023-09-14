@@ -55,5 +55,5 @@ class GetContactsByDateQuery(BaseModel):
             obj._end_date = obj._end_date.replace(hour=23, minute=59, second=59)
             return obj
 
-        except Exception as e:
+        except Exception:
             raise ValueError("Invalid date")

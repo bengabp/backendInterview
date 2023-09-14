@@ -6,7 +6,7 @@ from fastapi.routing import APIRouter
 from fastapi.responses import JSONResponse, StreamingResponse
 from bson import objectid
 
-from config import HTTPStatus
+from config import HTTPStatus, config
 from api.contacts.response_schemas import (
     ErrorResponse,
     UploadFileResponse,
@@ -81,7 +81,7 @@ async def upload_csv(
         content={
             "contacts_file_uid": contacts_file_uid,
             "filename": csv_file.filename,
-            "Content-Type": "text/csv",
+            "Content-Type": config.CSV_MIME_TYPE,
         },
     )
 
@@ -138,9 +138,9 @@ async def get_contacts_by_uid(
         return StreamingResponse(
             content=csv_file_buffer,
             status_code=HTTPStatus.OK,
-            media_type="text/csv",
+            media_type=config.CSV_MIME_TYPE,
             headers={
-                "Content-Type": "text/csv",
+                "Content-Type": config.CSV_MIME_TYPE,
                 "Content-Disposition": f"attachment; filename={str(contacts_file_content['_id'])}.csv",
             },
         )

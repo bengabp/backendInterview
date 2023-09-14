@@ -16,6 +16,7 @@ class Config(BaseSettings):
     DATE_FORMAT: str = "%Y-%m-%d"
     MAX_ON_MEMORY_FILE_SIZE: int = 1024000000
     JWT_SECRET: str
+    CSV_MIME_TYPE: str = "text/csv"
 
 
 class HTTPStatus:

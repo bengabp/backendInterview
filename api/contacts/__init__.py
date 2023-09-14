@@ -14,7 +14,7 @@ from api.contacts.request_schemas import GetContactsByDateQuery
 
 
 def is_valid_file_csv_type(content_type: str):
-    return content_type == "text/csv"
+    return content_type == config.CSV_MIME_TYPE
 
 
 def is_valid_csv_columns(csv_columns: List[str]):
@@ -147,7 +147,7 @@ def get_user(authorization: str = Header(...)):
     try:
         payload = jwt.decode(token, algorithms=["HS256"], key=config.JWT_SECRET)
         return payload["uid"]
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=HTTPStatus.UNAUTHORIZED, detail="Unauthorized access"
         )
