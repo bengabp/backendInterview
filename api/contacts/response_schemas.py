@@ -25,8 +25,14 @@ class UploadFileResponse(BaseModel):
     )
 
 
+class ContactsFileInDBResponse(UploadedFileInDB):
+    def model_dump(self, *args, **kwargs):
+        kwargs.pop("exclude", None)
+        return super().model_dump(exclude=["user_id"], *args, **kwargs)
+
+
 class GetContactsByDateResponse(BaseModel):
-    contacts: List[UploadedFileInDB] = Field(
+    contacts: List[ContactsFileInDBResponse] = Field(
         description="List of contacts file as stored in DB"
     )
     total_contacts: int = Field(
@@ -37,14 +43,16 @@ class GetContactsByDateResponse(BaseModel):
 
     @model_validator(mode="after")
     def update_total_contacts(cls, obj):
-        contacts: List[UploadedFileInDB] = obj.contacts
+        contacts: List[ContactsFileInDBResponse] = obj.contacts
         for contact in contacts:
             obj.total_contacts += contact.total_contacts
         return obj
 
-
-class ContactsFileInDBResponse(UploadedFileInDB):
-    pass
+    def model_dump(self, *args, **kwargs):
+        return {
+            "contacts": [item.model_dump() for item in self.contacts],
+            "totalContacts": self.total_contacts,
+        }
 
 
 class DeleteFileResponse(UploadFileResponse):
