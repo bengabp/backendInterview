@@ -1,12 +1,14 @@
 import asyncio
 import base64
+import jwt
 
-from fastapi import UploadFile
+from fastapi import UploadFile, Header, HTTPException
 from typing import List
 from datetime import datetime
 from bson.objectid import ObjectId
+from tempfile import SpooledTemporaryFile
 
-from config import config, db, logger
+from config import config, db, logger, HTTPStatus
 from api.contacts.schemas import ContactInDB, UploadedFileInDB, UploadedFileContentInDB
 from api.contacts.request_schemas import GetContactsByDateQuery
 
@@ -95,15 +97,50 @@ async def store_contact_in_db(doc: ContactInDB):
     return await csv_contact_collection.insert_one(doc.model_dump(by_alias=True))
 
 
-async def get_contacts_from_date(date_request: GetContactsByDateQuery):
-    if date_request.is_range:
-        mongo_query = {
-            "uploadedDate": {
-                "$gte": date_request._start_date,
-                "$lte": date_request._end_date,
-            }
+def get_contacts_from_date_query(date_request: GetContactsByDateQuery):
+    mongo_query = {
+        "uploadedDate": {
+            "$gte": date_request._start_date,
+            "$lte": date_request._end_date,
         }
-    else:
-        mongo_query = {"uploadedDate": date_request._date}
+    }
     file_metadata_collection = db["file_metadata"]
-    return file_metadata_collection.find(mongo_query)
+    return file_metadata_collection.find(mongo_query, {"_id": 0})
+
+
+async def file_exists_for_user(contacts_file_uid: str):
+    return await db["file_metadata"].find_one({"uid": contacts_file_uid}) is not None
+
+
+async def delete_contacts_by_contacts_file_uid(contacts_file_uid: str):
+    await db["file_metadata"].delete_many({"uid": contacts_file_uid})
+    await db["file_content"].delete_many({"contacts_file_uid": contacts_file_uid})
+    await db["items"].delete_many({"contacts_file_uid": contacts_file_uid})
+
+
+async def get_contacts_file_metadata_by_uid(contacts_file_uid: str):
+    return await db["file_metadata"].find_one({"uid": contacts_file_uid})
+
+
+async def get_contacts_file_content_by_uid(contacts_file_uid: str):
+    return await db["file_content"].find_one({"contacts_file_uid": contacts_file_uid})
+
+
+def get_download_file_buffer(contacts_file_content: dict):
+    csv_file_buffer = SpooledTemporaryFile(
+        max_size=config.MAX_ON_MEMORY_FILE_SIZE, mode="w+b"
+    )
+    csv_file_buffer.write(base64.b64decode(contacts_file_content["file_content"]))
+    csv_file_buffer.seek(0)
+    return csv_file_buffer
+
+
+def get_user(authorization: str = Header(...)):
+    token = authorization.split(" ")[-1]
+    try:
+        payload = jwt.decode(token, algorithms=["HS256"], key=config.JWT_SECRET)
+        return payload["uid"]
+    except Exception as e:
+        raise HTTPException(
+            status_code=HTTPStatus.UNAUTHORIZED, detail="Unauthorized access"
+        )

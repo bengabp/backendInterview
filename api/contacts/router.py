@@ -3,9 +3,10 @@ import codecs
 
 from fastapi import UploadFile, Depends, BackgroundTasks
 from fastapi.routing import APIRouter
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from typing import Union
 from bson import objectid
+from io import BytesIO
 
 from config import logger, HTTPStatus
 from api.contacts.response_schemas import (
@@ -19,13 +20,20 @@ from api.contacts.request_schemas import (
     GetContactsByDateQuery,
     GetContactsByUIDQuery,
     DeleteContactsByUIDQuery,
+    OutputForContacts,
 )
 from api.contacts import (
     is_valid_file_csv_type,
     is_valid_csv_columns,
     get_csv_headers,
     process_csv_file_handler,
-    # get_contacts_from_date_range,
+    get_contacts_from_date_query,
+    file_exists_for_user,
+    delete_contacts_by_contacts_file_uid,
+    get_contacts_file_content_by_uid,
+    get_contacts_file_metadata_by_uid,
+    get_download_file_buffer,
+    get_user,
 )
 
 
@@ -41,7 +49,11 @@ contacts_router = APIRouter(prefix="/contacts", tags=["Contacts"])
         HTTPStatus.BAD_REQUEST: {"model": ErrorResponse},
     },
 )
-async def upload_csv(csv_file: UploadFile, background_tasks: BackgroundTasks):
+async def upload_csv(
+    csv_file: UploadFile,
+    background_tasks: BackgroundTasks,
+    user_id: str = Depends(get_user),
+):
     if not is_valid_file_csv_type(csv_file.content_type):
         return ErrorResponse(
             status=HTTPStatus.BAD_REQUEST,
@@ -80,8 +92,10 @@ async def upload_csv(csv_file: UploadFile, background_tasks: BackgroundTasks):
 )
 async def get_contacts_by_date(
     request: GetContactsByDateQuery = Depends(GetContactsByDateQuery),
+    user_id: str = Depends(get_user),
 ):
-    return {}
+    response_list = [item async for item in get_contacts_from_date_query(request)]
+    return GetContactsByDateResponse(contacts=response_list)
 
 
 @contacts_router.get(
@@ -95,9 +109,31 @@ async def get_contacts_by_date(
 )
 async def get_contacts_by_uid(
     request: GetContactsByUIDQuery = Depends(GetContactsByUIDQuery),
+    user_id: str = Depends(get_user),
 ):
-    logger.debug(request)
-    return {}
+    if not await file_exists_for_user(request.contacts_file_uid):
+        return ErrorResponse(
+            status=HTTPStatus.NOT_FOUND, details="No file found with given uid"
+        )
+    if request.output == OutputForContacts.STRUCTURED:
+        contacts_file_metadata = await get_contacts_file_metadata_by_uid(
+            request.contacts_file_uid
+        )
+        return ContactsFileInDBResponse(**contacts_file_metadata)
+    else:
+        contacts_file_content = await get_contacts_file_content_by_uid(
+            request.contacts_file_uid
+        )
+        csv_file_buffer = get_download_file_buffer(contacts_file_content)
+        return StreamingResponse(
+            content=csv_file_buffer,
+            status_code=HTTPStatus.OK,
+            media_type="text/csv",
+            headers={
+                "Content-Type": "text/csv",
+                "Content-Disposition": f"attachment; filename={str(contacts_file_content['_id'])}.csv",
+            },
+        )
 
 
 @contacts_router.delete(
@@ -110,7 +146,18 @@ async def get_contacts_by_uid(
     },
 )
 async def delete_contacts(
+    background_tasks: BackgroundTasks,
     request: DeleteContactsByUIDQuery = Depends(DeleteContactsByUIDQuery),
+    user_id: str = Depends(get_user),
 ):
-    logger.debug(request)
-    return {}
+    if not await file_exists_for_user(request.contacts_file_uid):
+        return ErrorResponse(
+            status=HTTPStatus.NOT_FOUND, details="No file found with given uid"
+        )
+    background_tasks.add_task(
+        delete_contacts_by_contacts_file_uid, request.contacts_file_uid
+    )
+    return JSONResponse(
+        status_code=HTTPStatus.ACCEPTED,
+        content={"deletion_status": "Scheduled for deletion"},
+    )

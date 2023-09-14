@@ -28,7 +28,6 @@ class GetContactsByDateQuery(BaseModel):
     is_range: Optional[bool] = False
     _start_date: Optional[datetime] = None
     _end_date: Optional[datetime] = None
-    _date: Optional[datetime] = None
 
     @staticmethod
     def _validate_date(date):
@@ -52,11 +51,14 @@ class GetContactsByDateQuery(BaseModel):
                     obj._end_date,
                 ) = GetContactsByDateQuery._validate_date_range(date)
             else:
-                obj._date = GetContactsByDateQuery._validate_date(date)
+                obj._start_date = GetContactsByDateQuery._validate_date(date)
+                obj._end_date = obj._start_date
+            obj._start_date = obj._start_date.replace(hour=0, minute=0, second=0)
+            obj._end_date = obj._end_date.replace(hour=23, minute=59, second=59)
             return obj
 
         except Exception as e:
             print("--------Here")
             print(type(e))
             print(str(e))
-            return ValueError("Invalid date")
+            raise ValueError("Invalid date")

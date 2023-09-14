@@ -14,6 +14,8 @@ class Config(BaseSettings):
     MONGO_URI: str
     MONGO_DB_NAME: str
     DATE_FORMAT: str = "%Y-%m-%d"
+    MAX_ON_MEMORY_FILE_SIZE: int = 1024000000
+    JWT_SECRET: str
 
 
 class HTTPStatus:

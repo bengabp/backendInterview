@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field, validator, model_validator
 from typing import List
+from datetime import datetime
 
 from api.contacts.schemas import UploadedFileInDB
 
@@ -34,11 +35,11 @@ class GetContactsByDateResponse(BaseModel):
     )
 
     @model_validator(mode="after")
-    def update_total_contacts(cls, values):
-        contacts: List[UploadedFileInDB] = values["contacts"]
+    def update_total_contacts(cls, obj):
+        contacts: List[UploadedFileInDB] = obj.contacts
         for contact in contacts:
-            values["total_contacts"] += contact.total_contacts
-        return values
+            obj.total_contacts += contact.total_contacts
+        return obj
 
 
 class ContactsFileInDBResponse(UploadedFileInDB):

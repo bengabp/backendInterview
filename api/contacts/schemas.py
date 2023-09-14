@@ -15,6 +15,9 @@ class UploadedFileInDB(BaseModel):
         description="Total number of contacts in the file", alias="totalContacts"
     )
 
+    class Config:
+        json_encoders = {datetime: lambda v: v.isoformat()}
+
 
 class UploadedFileContentInDB(BaseModel):
     contacts_file_uid: str
@@ -31,3 +34,7 @@ class ContactInDB(BaseModel):
         description="Date of upload", alias="uploadedDate", default=datetime.utcnow()
     )
     contacts_file_uid: str = Field(description="Unique ID of contacts file")
+
+
+class UserID(BaseModel):
+    user_id: str = Field(description="User ID")
