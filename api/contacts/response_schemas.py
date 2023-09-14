@@ -1,11 +1,12 @@
 from pydantic import BaseModel, Field, validator, model_validator
+from fastapi import Response
 from typing import List
 from datetime import datetime
 
 from api.contacts.schemas import UploadedFileInDB
 
 
-class ErrorResponse(BaseModel):
+class ErrorResponse(BaseModel, Response):
     status: int = Field(description="HTTP status code of the error")
     details: str = Field(description="Details of the error")
 

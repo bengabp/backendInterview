@@ -3,7 +3,11 @@ from typing import List
 from datetime import datetime
 
 
-class UploadedFileInDB(BaseModel):
+class UserID(BaseModel):
+    user_id: str = Field(description="User ID")
+
+
+class UploadedFileInDB(UserID):
     filename: str = Field(description="Name of the file")
     uid: str = Field(description="Unique ID of the file")
     uploaded_date: datetime = Field(
@@ -34,7 +38,3 @@ class ContactInDB(BaseModel):
         description="Date of upload", alias="uploadedDate", default=datetime.utcnow()
     )
     contacts_file_uid: str = Field(description="Unique ID of contacts file")
-
-
-class UserID(BaseModel):
-    user_id: str = Field(description="User ID")

@@ -55,21 +55,28 @@ async def upload_csv(
     user_id: str = Depends(get_user),
 ):
     if not is_valid_file_csv_type(csv_file.content_type):
-        return ErrorResponse(
-            status=HTTPStatus.BAD_REQUEST,
-            details=f"Invalid content-type: {csv_file.content_type}",
+        return JSONResponse(
+            status_code=HTTPStatus.BAD_REQUEST,
+            content=dict(
+                status=HTTPStatus.BAD_REQUEST,
+                details=f"Invalid content-type: {csv_file.content_type}",
+            ),
         )
 
     csv_reader = csv.reader(codecs.iterdecode(csv_file.file, "utf-8"))
     csv_headers = get_csv_headers(csv_reader)
     if not is_valid_csv_columns(csv_headers):
-        return ErrorResponse(
-            status=HTTPStatus.BAD_REQUEST, details=f"Invalid columns: {csv_headers}"
+        return JSONResponse(
+            status_code=HTTPStatus.BAD_REQUEST,
+            content=dict(
+                status=HTTPStatus.BAD_REQUEST,
+                details=f"Invalid columns: {csv_headers}",
+            ),
         )
 
     contacts_file_uid = str(objectid.ObjectId())
     background_tasks.add_task(
-        process_csv_file_handler, contacts_file_uid, csv_file, csv_reader
+        process_csv_file_handler, user_id, contacts_file_uid, csv_file, csv_reader
     )
     return JSONResponse(
         status_code=HTTPStatus.ACCEPTED,
@@ -94,7 +101,9 @@ async def get_contacts_by_date(
     request: GetContactsByDateQuery = Depends(GetContactsByDateQuery),
     user_id: str = Depends(get_user),
 ):
-    response_list = [item async for item in get_contacts_from_date_query(request)]
+    response_list = [
+        item async for item in get_contacts_from_date_query(request, user_id)
+    ]
     return GetContactsByDateResponse(contacts=response_list)
 
 
@@ -111,9 +120,12 @@ async def get_contacts_by_uid(
     request: GetContactsByUIDQuery = Depends(GetContactsByUIDQuery),
     user_id: str = Depends(get_user),
 ):
-    if not await file_exists_for_user(request.contacts_file_uid):
-        return ErrorResponse(
-            status=HTTPStatus.NOT_FOUND, details="No file found with given uid"
+    if not await file_exists_for_user(request.contacts_file_uid, user_id):
+        return JSONResponse(
+            content=dict(
+                status=HTTPStatus.NOT_FOUND, details="No file found with given uid"
+            ),
+            status_code=HTTPStatus.NOT_FOUND,
         )
     if request.output == OutputForContacts.STRUCTURED:
         contacts_file_metadata = await get_contacts_file_metadata_by_uid(
@@ -150,9 +162,12 @@ async def delete_contacts(
     request: DeleteContactsByUIDQuery = Depends(DeleteContactsByUIDQuery),
     user_id: str = Depends(get_user),
 ):
-    if not await file_exists_for_user(request.contacts_file_uid):
-        return ErrorResponse(
-            status=HTTPStatus.NOT_FOUND, details="No file found with given uid"
+    if not await file_exists_for_user(request.contacts_file_uid, user_id):
+        return JSONResponse(
+            content=dict(
+                status=HTTPStatus.NOT_FOUND, details="No file found with given uid"
+            ),
+            status_code=HTTPStatus.NOT_FOUND,
         )
     background_tasks.add_task(
         delete_contacts_by_contacts_file_uid, request.contacts_file_uid

@@ -30,12 +30,12 @@ def get_csv_headers(csv_reader):
 
 
 async def process_csv_file_handler(
-    contacts_file_uid: str, csv_file: UploadFile, csv_reader
+    user_id: str, contacts_file_uid: str, csv_file: UploadFile, csv_reader
 ):
     total_contacts = await process_csv_file_contact_items(csv_reader, contacts_file_uid)
     await store_file_content_in_db(contacts_file_uid, csv_file)
     return await store_file_metadata_in_db(
-        contacts_file_uid, csv_file.filename, len(total_contacts)
+        user_id, contacts_file_uid, csv_file.filename, len(total_contacts)
     )
 
 
@@ -59,10 +59,11 @@ async def process_csv_file_contact_items(csv_reader, contacts_file_uid: str):
 
 
 async def store_file_metadata_in_db(
-    contacts_file_uid: str, csv_filename: str, total_contacts: int
+    user_id: str, contacts_file_uid: str, csv_filename: str, total_contacts: int
 ):
     db_doc_file_meta = UploadedFileInDB(
         **{
+            "user_id": user_id,
             "filename": csv_filename,
             "uid": contacts_file_uid,
             "totalContacts": total_contacts,
@@ -97,19 +98,25 @@ async def store_contact_in_db(doc: ContactInDB):
     return await csv_contact_collection.insert_one(doc.model_dump(by_alias=True))
 
 
-def get_contacts_from_date_query(date_request: GetContactsByDateQuery):
+def get_contacts_from_date_query(date_request: GetContactsByDateQuery, user_id: str):
     mongo_query = {
+        "user_id": user_id,
         "uploadedDate": {
             "$gte": date_request._start_date,
             "$lte": date_request._end_date,
-        }
+        },
     }
     file_metadata_collection = db["file_metadata"]
     return file_metadata_collection.find(mongo_query, {"_id": 0})
 
 
-async def file_exists_for_user(contacts_file_uid: str):
-    return await db["file_metadata"].find_one({"uid": contacts_file_uid}) is not None
+async def file_exists_for_user(contacts_file_uid: str, user_id: str):
+    return (
+        await db["file_metadata"].find_one(
+            {"uid": contacts_file_uid, "user_id": user_id}
+        )
+        is not None
+    )
 
 
 async def delete_contacts_by_contacts_file_uid(contacts_file_uid: str):
