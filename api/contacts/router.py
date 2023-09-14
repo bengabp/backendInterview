@@ -3,12 +3,10 @@ import codecs
 
 from fastapi import UploadFile, Depends, BackgroundTasks
 from fastapi.routing import APIRouter
-from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
-from typing import Union
+from fastapi.responses import JSONResponse, StreamingResponse
 from bson import objectid
-from io import BytesIO
 
-from config import logger, HTTPStatus
+from config import HTTPStatus
 from api.contacts.response_schemas import (
     ErrorResponse,
     UploadFileResponse,

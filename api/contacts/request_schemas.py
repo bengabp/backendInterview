@@ -25,7 +25,6 @@ class GetContactsByUIDQuery(UIDQuery):
 
 class GetContactsByDateQuery(BaseModel):
     date: str = Field(descrition="Date or date range to get contacts")
-    is_range: Optional[bool] = False
     _start_date: Optional[datetime] = None
     _end_date: Optional[datetime] = None
 
@@ -45,7 +44,6 @@ class GetContactsByDateQuery(BaseModel):
         date = obj.date[1:-1]
         try:
             if "-" in date:
-                obj.is_range = True
                 (
                     obj._start_date,
                     obj._end_date,
@@ -58,7 +56,4 @@ class GetContactsByDateQuery(BaseModel):
             return obj
 
         except Exception as e:
-            print("--------Here")
-            print(type(e))
-            print(str(e))
             raise ValueError("Invalid date")

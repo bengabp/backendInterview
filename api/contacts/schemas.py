@@ -24,8 +24,8 @@ class UploadedFileInDB(UserID):
 
 
 class UploadedFileContentInDB(BaseModel):
-    contacts_file_uid: str
-    file_content: str
+    contacts_file_uid: str = Field(description="UID of the contacts file")
+    file_content: str = Field(description="Content of the file encoded in base64")
 
 
 class ContactInDB(BaseModel):
