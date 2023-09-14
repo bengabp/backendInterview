@@ -24,8 +24,7 @@ from api.contacts import (
     is_valid_file_csv_type,
     is_valid_csv_columns,
     get_csv_headers,
-    process_csv_file_contact_items,
-    process_csv_file,
+    process_csv_file_handler,
     # get_contacts_from_date_range,
 )
 
@@ -58,9 +57,8 @@ async def upload_csv(csv_file: UploadFile, background_tasks: BackgroundTasks):
 
     contacts_file_uid = str(objectid.ObjectId())
     background_tasks.add_task(
-        process_csv_file_contact_items, csv_reader, contacts_file_uid
+        process_csv_file_handler, contacts_file_uid, csv_file, csv_reader
     )
-    background_tasks.add_task(process_csv_file, csv_file, contacts_file_uid)
     return JSONResponse(
         status_code=HTTPStatus.ACCEPTED,
         content={

@@ -13,6 +13,7 @@ class Config(BaseSettings):
     MANDATORY_HEADERS: Set[str] = {"firstName", "lastName", "email", "companyName"}
     MONGO_URI: str
     MONGO_DB_NAME: str
+    DATE_FORMAT: str = "%Y-%m-%d"
 
 
 class HTTPStatus:

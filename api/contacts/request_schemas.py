@@ -1,6 +1,6 @@
 from enum import Enum
 from datetime import datetime
-from pydantic import BaseModel, validator, Field
+from pydantic import BaseModel, model_validator, Field
 from typing import Optional
 
 
@@ -26,33 +26,37 @@ class GetContactsByUIDQuery(UIDQuery):
 class GetContactsByDateQuery(BaseModel):
     date: str = Field(descrition="Date or date range to get contacts")
     is_range: Optional[bool] = False
+    _start_date: Optional[datetime] = None
+    _end_date: Optional[datetime] = None
+    _date: Optional[datetime] = None
 
     @staticmethod
     def _validate_date(date):
-        datetime.strptime(date, "%Y/%m/%d")
-        return date
+        return datetime.strptime(date, "%Y/%m/%d")
 
     @staticmethod
     def _validate_date_range(date_range):
         dates = date_range.split(" - ")
-        datetime.strptime(dates[0], "%Y/%m/%d")
-        datetime.strptime(dates[1], "%Y/%m/%d")
-        return date_range
+        return datetime.strptime(dates[0], "%Y/%m/%d"), datetime.strptime(
+            dates[1], "%Y/%m/%d"
+        )
 
-    @validator("date")
-    def validate_date(cls, v, values):
-        date = v[1:-1]
-        validator_function = None
-        if "-" in date:
-            values["is_range"] = True
-            validator_function = GetContactsByDateQuery._validate_date_range
-        else:
-            validator_function = GetContactsByDateQuery._validate_date
-
+    @model_validator(mode="after")
+    def validate_date(cls, obj):
+        date = obj.date[1:-1]
         try:
-            return validator_function(date)
+            if "-" in date:
+                obj.is_range = True
+                (
+                    obj._start_date,
+                    obj._end_date,
+                ) = GetContactsByDateQuery._validate_date_range(date)
+            else:
+                obj._date = GetContactsByDateQuery._validate_date(date)
+            return obj
+
         except Exception as e:
             print("--------Here")
             print(type(e))
             print(str(e))
-            return ValueError("Invalid date range")
+            return ValueError("Invalid date")
