@@ -1,45 +1,61 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator, model_validator
+from fastapi import Response
 from typing import List
+from datetime import datetime
+
+from api.contacts.schemas import UploadedFileInDB
 
 
-class SuccessRespose(BaseModel):
-    detail: str = Field(description="Success Message")
+class ErrorResponse(BaseModel, Response):
+    status: int = Field(description="HTTP status code of the error")
+    details: str = Field(description="Details of the error")
+
+    @validator("status")
+    def validate_status(cls, v):
+        if 400 <= v <= 599:
+            return v
+        raise ValueError(f"Incorrect HTTP status code value for error: {v}")
 
 
-class ErrorResponse(BaseModel):
-    detail: str = Field(description="Error Message")
+class UploadFileResponse(BaseModel):
+    id: str = Field(description="File UID of uploaded file", alias="contacts_file_uid")
+    filename: str = Field(description="Filename of uploaded file")
+    content_type: str = Field(
+        description="Content type of uploaded file", alias="Content-Type"
+    )
 
 
-class Token(BaseModel):
-    access_token: str = Field(description="Access Token")
-    token_type: str = Field(description="Token Type")
+class ContactsFileInDBResponse(UploadedFileInDB):
+    def model_dump(self, *args, **kwargs):
+        kwargs.pop("exclude", None)
+        return super().model_dump(exclude=["user_id"], *args, **kwargs)
 
 
-class ContactSingleFile(BaseModel):
-    uid: str = Field(description="Uniquely Identifies the Contact File", alias="uid")
-    filename: str = Field(description="Uploaded File Name", alias="fileName")
-    upload_date: str = Field(
-        description="Date at which file was uploaded", alias="uploadDate"
+class GetContactsByDateResponse(BaseModel):
+    contacts: List[ContactsFileInDBResponse] = Field(
+        description="List of contacts file as stored in DB"
     )
     total_contacts: int = Field(
-        description="Total Number of Contacts in the File", alias="totalContacts"
+        description="Total count of found contacts file",
+        alias="totalContacts",
+        default=0,
     )
 
+    @model_validator(mode="after")
+    def update_total_contacts(cls, obj):
+        contacts: List[ContactsFileInDBResponse] = obj.contacts
+        for contact in contacts:
+            obj.total_contacts += contact.total_contacts
+        return obj
 
-class ContactFile(BaseModel):
-    uid: str = Field(description="Uniquely Identifies the Contact File", alias="uid")
-    upload_date: str = Field(
-        description="Date at which file was uploaded", alias="uploadDate"
-    )
-    total_contacts: int = Field(
-        description="Total Number of Contacts in the File", alias="totalContacts"
-    )
+    def model_dump(self, *args, **kwargs):
+        return {
+            "contacts": [item.model_dump() for item in self.contacts],
+            "totalContacts": self.total_contacts,
+        }
 
 
-class ContactFileResponseList(BaseModel):
-    contacts: List[ContactFile] = Field(
-        description="A List consisting of information about each contact file"
-    )
-    total_contacts: int = Field(
-        description="Total Number of Contacts Files", alias="totalContacts"
+class DeleteFileResponse(UploadFileResponse):
+    deletion_status: str = Field(
+        description="Status of delete operation", alias="deletionStatus"
     )
